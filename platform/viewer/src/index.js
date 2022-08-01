@@ -34,6 +34,9 @@ import OHIFDicomPDFExtension from '@ohif/extension-dicom-pdf';
 //import OHIFDebuggingExtension from '@ohif/extension-debugging';
 import { version } from '../package.json';
 
+import OHIFMONAILabelExtension from '../../../extensions/monai-label';
+
+
 /*
  * Default Settings
  */
@@ -53,6 +56,7 @@ const appProps = {
     OHIFDicomPDFExtension,
     OHIFDicomSegmentationExtension,
     OHIFDicomRtExtension,
+    OHIFMONAILabelExtension,
     //OHIFDebuggingExtension,
     //OHIFDicomTagBrowserExtension,
   ],

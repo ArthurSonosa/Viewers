@@ -57,6 +57,7 @@ import store from './store';
 import WhiteLabelingContext from './context/WhiteLabelingContext';
 import UserManagerContext from './context/UserManagerContext';
 import { AppProvider, useAppContext, CONTEXTS } from './context/AppContext';
+import {auth} from "./googleAuth";
 
 /** ~~~~~~~~~~~~~ Application Setup */
 const commandsManagerConfig = {
@@ -81,6 +82,8 @@ window.ohif.app = {
   servicesManager,
   extensionManager,
 };
+
+let isMounted = false
 
 class App extends Component {
   static propTypes = {
@@ -136,6 +139,12 @@ class App extends Component {
     } = this._appConfig;
 
     setConfiguration(this._appConfig);
+
+    auth.onAuthStateChanged(user => {
+      const store = window.store.getState();
+      store.user = user;
+      console.log(user);
+    });
 
     this.initUserManager(oidc);
     _initServices([

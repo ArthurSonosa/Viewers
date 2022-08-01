@@ -5,7 +5,12 @@ import { Route, Switch } from 'react-router-dom';
 import { NProgress } from '@tanem/react-nprogress';
 import { CSSTransition } from 'react-transition-group';
 import { connect } from 'react-redux';
-import { ViewerbaseDragDropContext, ErrorBoundary, asyncComponent, retryImport } from '@ohif/ui';
+import {
+  ViewerbaseDragDropContext,
+  ErrorBoundary,
+  asyncComponent,
+  retryImport,
+} from '@ohif/ui';
 import { SignoutCallbackComponent } from 'redux-oidc';
 import * as RoutesUtil from './routes/routesUtil';
 
@@ -16,8 +21,17 @@ import './variables.css';
 import './theme-tide.css';
 // Contexts
 import AppContext from './context/AppContext';
+import { auth } from './googleAuth';
+import {
+  signInWithRedirect,
+  GoogleAuthProvider,
+  getRedirectResult,
+  onAuthStateChanged
+} from 'firebase/auth';
 const CallbackPage = asyncComponent(() =>
-  retryImport(() => import(/* webpackChunkName: "CallbackPage" */ './routes/CallbackPage.js'))
+  retryImport(() =>
+    import(/* webpackChunkName: "CallbackPage" */ './routes/CallbackPage.js')
+  )
 );
 
 class OHIFStandaloneViewer extends Component {
@@ -50,7 +64,19 @@ class OHIFStandaloneViewer extends Component {
     const { user, userManager } = this.props;
     const { appConfig = {} } = this.context;
     const userNotLoggedIn = userManager && (!user || user.expired);
+
+    console.log(auth.currentUser);
+
+    if (auth.currentUser == null) {
+        return (
+            <NotFound/>
+        )
+    }
+
+    console.log(userNotLoggedIn);
+    console.log(user);
     if (userNotLoggedIn) {
+      console.log('USER NOT LOGGED IN');
       const { pathname, search } = this.props.location;
 
       if (pathname !== '/callback') {
@@ -149,6 +175,8 @@ class OHIFStandaloneViewer extends Component {
       );
     }
 
+    console.log('USER ????????????????????????!!!');
+    console.log(auth.currentUser);
     /**
      * Note: this approach for routing is caused by the conflict between
      * react-transition-group and react-router's <Switch> component.
@@ -158,6 +186,7 @@ class OHIFStandaloneViewer extends Component {
     const routes = RoutesUtil.getRoutes(appConfig);
 
     const currentPath = this.props.location.pathname;
+    console.log('Current Path: ', currentPath);
     const noMatchingRoutes = !routes.find(r =>
       matchPath(currentPath, {
         path: r.path,
@@ -202,10 +231,10 @@ class OHIFStandaloneViewer extends Component {
                   {match === null ? (
                     <></>
                   ) : (
-                      <ErrorBoundary context={match.url}>
-                        <Component match={match} location={this.props.location} />
-                      </ErrorBoundary>
-                    )}
+                    <ErrorBoundary context={match.url}>
+                      <Component match={match} location={this.props.location} />
+                    </ErrorBoundary>
+                  )}
                 </CSSTransition>
               )}
             </Route>
