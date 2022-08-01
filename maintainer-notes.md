@@ -27,7 +27,7 @@ yarn add --dev -W package-name
 - Multi-Repo: https://circleci.com/orbs/registry/orb/dnephin/multirepo
 - PR Comment: https://circleci.com/orbs/registry/orb/benjlevesque/pr-comment
 
-Debug Note: `http://localhost:3000/webpack-dev-server`
+Debug Note: `http://localhost:7000/webpack-dev-server`
 
 ## Bundling
 

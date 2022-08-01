@@ -351,7 +351,7 @@ workflows:
             APP_CONFIG=config/e2e.js yarn run build
           start: yarn run test:e2e:serve
           spec: 'cypress/integration/common/**/*,cypress/integration/pwa/**/*'
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:7000'
           cache-key: 'yarn-packages-{{ checksum "yarn.lock" }}'
           no-workspace: true # Don't persist workspace
           post-steps:
@@ -379,7 +379,7 @@ workflows:
             APP_CONFIG=config/e2e.js yarn run build:package
           start: yarn run test:e2e:serve
           spec: 'cypress/integration/common/**/*,cypress/integration/script-tag/**/*'
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:7000'
           cache-key: 'yarn-packages-{{ checksum "yarn.lock" }}'
           no-workspace: true # Don't persist workspace
           post-steps:
