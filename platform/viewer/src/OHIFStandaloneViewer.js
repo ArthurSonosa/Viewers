@@ -26,7 +26,7 @@ import {
   signInWithRedirect,
   GoogleAuthProvider,
   getRedirectResult,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from 'firebase/auth';
 const CallbackPage = asyncComponent(() =>
   retryImport(() =>
@@ -38,6 +38,7 @@ class OHIFStandaloneViewer extends Component {
   static contextType = AppContext;
   state = {
     isLoading: false,
+    user: null,
   };
 
   static propTypes = {
@@ -54,6 +55,14 @@ class OHIFStandaloneViewer extends Component {
         this.props.setContext(window.location.pathname);
       }
     });
+
+    auth.onAuthStateChanged(user => {
+      this.state.user = user;
+
+      if (this.props.setContext) {
+        this.props.setContext(window.location.pathname);
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -62,19 +71,17 @@ class OHIFStandaloneViewer extends Component {
 
   render() {
     const { user, userManager } = this.props;
-    
+
     console.log(this.props);
     console.log(window.store.getState());
-    
+
     const { appConfig = {} } = this.context;
     const userNotLoggedIn = userManager && (!user || user.expired);
 
     console.log(auth.currentUser);
 
     if (auth.currentUser == null) {
-        return (
-            <NotFound/>
-        )
+      return <NotFound />;
     }
 
     console.log(userNotLoggedIn);
@@ -253,6 +260,7 @@ const mapStateToProps = state => {
   return {
     user: state.oidc.user,
     userF: state.user,
+    userT: window.store.getState().user,
   };
 };
 

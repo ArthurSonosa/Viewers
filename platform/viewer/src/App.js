@@ -146,6 +146,7 @@ class App extends Component {
       console.log(user);
     });
 
+
     this.initUserManager(oidc);
     _initServices([
       UINotificationService,
