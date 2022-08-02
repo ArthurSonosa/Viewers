@@ -12,6 +12,9 @@ import user from '../user';
 export default function getAuthorizationHeader({ requestOptions } = {}) {
   const headers = {};
 
+  const store = window.store.getState();
+  console.log(store);
+
   // Check for OHIF.user since this can also be run on the server
   const accessToken = user && user.getAccessToken && user.getAccessToken();
 
