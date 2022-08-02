@@ -1,6 +1,6 @@
 window.config = {
     // default: '/'
-    routerBasename: '/',
+    routerBasename: '/viewer/',
     extensions: [],
     showStudyList: true,
     filterQueryParam: false,
@@ -18,9 +18,9 @@ window.config = {
         dicomWeb: [
             {
                 name: 'Orthanc',
-                wadoUriRoot: 'http://35.212.20.115:8000/proxy/dicom/wado',
-                qidoRoot: 'http://35.212.20.115:8000/proxy/dicom',
-                wadoRoot: 'http://35.212.20.115:8000/proxy/dicom',
+                wadoUriRoot: 'https://app.sonosamedical.com/router/dicom-web/wado',
+                qidoRoot: 'https://app.sonosamedical.com/router/dicom-web',
+                wadoRoot: 'https://app.sonosamedical.com/router/dicom-web',
                 qidoSupportsIncludeField: true,
                 imageRendering: 'wadors',
                 thumbnailRendering: 'wadors',

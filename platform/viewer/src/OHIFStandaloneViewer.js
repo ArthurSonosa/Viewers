@@ -28,6 +28,7 @@ import {
   getRedirectResult,
   onAuthStateChanged,
 } from 'firebase/auth';
+import routerContext from 'react-router/modules/RouterContext';
 const CallbackPage = asyncComponent(() =>
   retryImport(() =>
     import(/* webpackChunkName: "CallbackPage" */ './routes/CallbackPage.js')
@@ -58,16 +59,19 @@ class OHIFStandaloneViewer extends Component {
 
     auth.onAuthStateChanged(user => {
       this.state.user = user;
-      console.log("ON AUTH STATE CHANGED STANDALONE");
+      console.log('ON AUTH STATE CHANGED STANDALONE');
       console.log(user);
-      
+
       this.setState({ user: user });
       console.log(this.state);
 
-      if (this.props.setContext) {
-        this.props.setContext(window.location.pathname);
-        console.log("RELOADED?")
-      }
+      const ohifRedirectTo = {
+        pathname: '/',
+      };
+      sessionStorage.setItem(
+        'ohif-redirect-to',
+        JSON.stringify(ohifRedirectTo)
+      );
     });
   }
 

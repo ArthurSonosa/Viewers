@@ -31,6 +31,7 @@ class StandaloneRouting extends Component {
   parseQueryAndRetrieveDICOMWebData(query) {
     return new Promise((resolve, reject) => {
       const url = query.url;
+      console.log(url)
 
       if (!url) {
         return reject(new Error('No URL was specified. Use ?url=$yourURL'));
@@ -39,6 +40,7 @@ class StandaloneRouting extends Component {
       // Define a request to the server to retrieve the study data
       // as JSON, given a URL that was in the Route
       const oReq = new XMLHttpRequest();
+      oReq.setRequestHeader('Authorization', 'Basic ' + btoa('sonosa:osa'));
 
       // Add event listeners for request failure
       oReq.addEventListener('error', error => {
