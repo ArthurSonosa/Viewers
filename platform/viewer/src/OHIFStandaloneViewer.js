@@ -266,7 +266,6 @@ const mapStateToProps = state => {
   return {
     user: state.oidc.user,
     userF: state.user,
-    userT: this.state.user,
   };
 };
 
