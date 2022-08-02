@@ -118,8 +118,7 @@ function resultDataToStudies(resultData) {
 export default function Studies(server, filter) {
   const { staticWado } = server;
 
-  console.log(server.qidoRoot);
-  console.log(DICOMWeb.getAuthorizationHeader(server));
+  console.log(server);
 
   const config = {
     ...server,
