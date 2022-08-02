@@ -215,32 +215,34 @@ class App extends Component {
       );
     }
 
-    return (
-      <ErrorBoundary context="App">
-        <Provider store={store}>
-          <AppProvider config={this._appConfig}>
-            <I18nextProvider i18n={i18n}>
-              <Router basename={routerBasename}>
-                <WhiteLabelingContext.Provider value={whiteLabeling}>
-                  <LoggerProvider service={LoggerService}>
-                    <SnackbarProvider service={UINotificationService}>
-                      <DialogProvider service={UIDialogService}>
-                        <ModalProvider
-                          modal={OHIFModal}
-                          service={UIModalService}
-                        >
-                          <OHIFStandaloneViewer />
-                        </ModalProvider>
-                      </DialogProvider>
-                    </SnackbarProvider>
-                  </LoggerProvider>
-                </WhiteLabelingContext.Provider>
-              </Router>
-            </I18nextProvider>
-          </AppProvider>
-        </Provider>
-      </ErrorBoundary>
-    );
+    auth.onAuthStateChanged(user => {
+      return (
+          <ErrorBoundary context="App">
+            <Provider store={store}>
+              <AppProvider config={this._appConfig}>
+                <I18nextProvider i18n={i18n}>
+                  <Router basename={routerBasename}>
+                    <WhiteLabelingContext.Provider value={whiteLabeling}>
+                      <LoggerProvider service={LoggerService}>
+                        <SnackbarProvider service={UINotificationService}>
+                          <DialogProvider service={UIDialogService}>
+                            <ModalProvider
+                                modal={OHIFModal}
+                                service={UIModalService}
+                            >
+                              <OHIFStandaloneViewer />
+                            </ModalProvider>
+                          </DialogProvider>
+                        </SnackbarProvider>
+                      </LoggerProvider>
+                    </WhiteLabelingContext.Provider>
+                  </Router>
+                </I18nextProvider>
+              </AppProvider>
+            </Provider>
+          </ErrorBoundary>
+      );
+    });
   }
 
   initUserManager(oidc) {

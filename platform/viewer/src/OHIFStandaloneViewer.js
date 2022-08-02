@@ -58,9 +58,14 @@ class OHIFStandaloneViewer extends Component {
 
     auth.onAuthStateChanged(user => {
       this.state.user = user;
+      console.log("ON AUTH STATE CHANGED STANDALONE");
+      console.log(user);
+      
+      this.setState({ user: user });
 
       if (this.props.setContext) {
         this.props.setContext(window.location.pathname);
+        console.log("RELOADED?")
       }
     });
   }
@@ -80,7 +85,7 @@ class OHIFStandaloneViewer extends Component {
 
     console.log(auth.currentUser);
 
-    if (auth.currentUser == null) {
+    if (this.state.user == null) {
       return <NotFound />;
     }
 
@@ -260,7 +265,7 @@ const mapStateToProps = state => {
   return {
     user: state.oidc.user,
     userF: state.user,
-    userT: window.store.getState().user,
+    userT: this.state.user,
   };
 };
 
