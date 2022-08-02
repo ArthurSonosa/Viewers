@@ -1,4 +1,7 @@
 import user from '../user';
+import store from '../../../viewer/src/store/index';
+
+window.store = store;
 
 /**
  * Returns the Authorization header as part of an Object.

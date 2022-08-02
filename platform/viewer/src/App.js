@@ -83,8 +83,6 @@ window.ohif.app = {
   extensionManager,
 };
 
-let isMounted = false
-
 class App extends Component {
   static propTypes = {
     config: PropTypes.oneOfType([

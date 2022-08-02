@@ -94,8 +94,6 @@ class OHIFStandaloneViewer extends Component {
       return <NotFound />;
     }
 
-    console.log(userNotLoggedIn);
-    console.log(user);
     if (userNotLoggedIn) {
       console.log('USER NOT LOGGED IN');
       const { pathname, search } = this.props.location;
