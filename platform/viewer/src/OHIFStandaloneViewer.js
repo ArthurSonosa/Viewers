@@ -62,6 +62,7 @@ class OHIFStandaloneViewer extends Component {
       console.log(user);
       
       this.setState({ user: user });
+      console.log(this.state);
 
       if (this.props.setContext) {
         this.props.setContext(window.location.pathname);
