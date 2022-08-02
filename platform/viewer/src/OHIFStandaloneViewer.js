@@ -62,6 +62,10 @@ class OHIFStandaloneViewer extends Component {
 
   render() {
     const { user, userManager } = this.props;
+    
+    console.log(this.props);
+    console.log(window.store.getState());
+    
     const { appConfig = {} } = this.context;
     const userNotLoggedIn = userManager && (!user || user.expired);
 
@@ -248,6 +252,7 @@ class OHIFStandaloneViewer extends Component {
 const mapStateToProps = state => {
   return {
     user: state.oidc.user,
+    userF: state.user,
   };
 };
 
