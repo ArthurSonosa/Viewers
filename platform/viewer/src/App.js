@@ -243,6 +243,8 @@ class App extends Component {
           </ErrorBoundary>
       );
     });
+
+    return null;
   }
 
   initUserManager(oidc) {
