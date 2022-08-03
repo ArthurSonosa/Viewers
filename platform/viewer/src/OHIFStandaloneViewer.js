@@ -4,7 +4,7 @@ import { withRouter, matchPath } from 'react-router';
 import { Route, Switch } from 'react-router-dom';
 import { NProgress } from '@tanem/react-nprogress';
 import { CSSTransition } from 'react-transition-group';
-import { connect } from 'react-redux';
+import {connect, useDispatch} from 'react-redux';
 import {
   ViewerbaseDragDropContext,
   ErrorBoundary,
@@ -29,6 +29,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import routerContext from 'react-router/modules/RouterContext';
+import actions from "@ohif/core/src/redux/actions";
 const CallbackPage = asyncComponent(() =>
   retryImport(() =>
     import(/* webpackChunkName: "CallbackPage" */ './routes/CallbackPage.js')
@@ -58,11 +59,14 @@ class OHIFStandaloneViewer extends Component {
     });
 
     auth.onAuthStateChanged(user => {
+      const dispatch = useDispatch();
+
       this.state.user = user;
       console.log('ON AUTH STATE CHANGED STANDALONE');
       console.log(user);
 
       this.setState({ user: user });
+      dispatch(actions.setUser({ user: user }));
       console.log(this.state);
 
       const ohifRedirectTo = {

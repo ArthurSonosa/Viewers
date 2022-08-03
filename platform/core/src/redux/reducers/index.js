@@ -4,6 +4,7 @@ import servers from './servers';
 import studies from './studies';
 import timepointManager from './timepointManager';
 import viewports from './viewports';
+import user from "./user";
 
 const reducers = {
   extensions,
@@ -12,6 +13,7 @@ const reducers = {
   studies,
   timepointManager,
   viewports,
+  user,
 };
 
 export default reducers;

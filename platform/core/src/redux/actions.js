@@ -10,7 +10,7 @@ import {
   SET_VIEWPORT_ACTIVE,
   SET_VIEWPORT_LAYOUT,
   SET_VIEWPORT_LAYOUT_AND_DATA,
-  SET_USER_PREFERENCES,
+  SET_USER_PREFERENCES, SET_USER,
 } from './constants/ActionTypes.js';
 
 /**
@@ -78,6 +78,11 @@ export const setActiveViewportSpecificData = viewportSpecificData => ({
 /**
  * NOT-VIEWPORT
  */
+export const setUser = state => ({
+  type: SET_USER,
+  state,
+});
+
 export const setUserPreferences = state => ({
   type: SET_USER_PREFERENCES,
   state,
@@ -123,6 +128,7 @@ const actions = {
   /**
    * NOT-VIEWPORT
    */
+  setUser,
   setUserPreferences,
   setExtensionData,
   setTimepoints,
