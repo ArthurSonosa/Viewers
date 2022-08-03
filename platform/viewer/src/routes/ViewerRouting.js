@@ -46,7 +46,7 @@ function ViewerRouting({ match: routeMatch, location: routeLocation }) {
   console.log(authToken);
 
   // if (authToken) {
-  user.getAccessToken = () => authToken;
+  user.getAccessToken = () => store.user.accessToken;
   // }
 
   const server = useServer({ project, location, dataset, dicomStore });

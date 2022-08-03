@@ -7,6 +7,7 @@ import { extensionManager } from './../App.js';
 import ConnectedViewer from '../connectedComponents/ConnectedViewer';
 import ConnectedViewerRetrieveStudyData from '../connectedComponents/ConnectedViewerRetrieveStudyData';
 import NotFound from '../routes/NotFound';
+import user from "@ohif/core/src/user";
 
 const { log, metadata, utils } = OHIF;
 const { studyMetadataManager } = utils;
@@ -40,7 +41,13 @@ class StandaloneRouting extends Component {
       // Define a request to the server to retrieve the study data
       // as JSON, given a URL that was in the Route
       const oReq = new XMLHttpRequest();
-      oReq.setRequestHeader('Authorization', 'Basic ' + btoa('sonosa:osa'));
+
+      const accessToken = user && user.getAccessToken && user.getAccessToken();
+      console.log(accessToken);
+
+      console.log(window.store.getState().user);
+
+      oReq.setRequestHeader('Authorization', `Bearer ${accessToken}`);
 
       // Add event listeners for request failure
       oReq.addEventListener('error', error => {
