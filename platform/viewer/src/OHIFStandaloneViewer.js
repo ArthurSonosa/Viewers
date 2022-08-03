@@ -59,14 +59,11 @@ class OHIFStandaloneViewer extends Component {
     });
 
     auth.onAuthStateChanged(user => {
-      const dispatch = useDispatch();
-
       this.state.user = user;
       console.log('ON AUTH STATE CHANGED STANDALONE');
       console.log(user);
 
       this.setState({ user: user });
-      dispatch(actions.setUser({ user: user }));
       console.log(this.state);
 
       const ohifRedirectTo = {
