@@ -29,11 +29,12 @@ export function setConfiguration(appConfig) {
   OHIF.user.getAccessToken = () => {
     // TODO: Get the Redux store from somewhere else
     const state = window.store.getState();
-    if (!state.oidc || !state.oidc.user) {
+    if (!state.user) {
       return;
     }
 
-    return state.oidc.user.access_token;
+    console.log("USED TOKEN!")
+    return state.user.accessToken;
   };
 
   OHIF.errorHandler.getHTTPErrorHandler = () => {
