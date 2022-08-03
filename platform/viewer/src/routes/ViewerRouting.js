@@ -30,16 +30,23 @@ function ViewerRouting({ match: routeMatch, location: routeLocation }) {
     seriesInstanceUIDs,
   } = routeMatch.params;
 
+  console.log(location);
+
+  const store = window.store.getState();
+  console.log(store);
+
   // Set the user's default authToken for outbound DICOMWeb requests.
   // Is only applied if target server does not set `requestOptions` property.
   //
   // See: `getAuthorizationHeaders.js`
   let query = useQuery();
+  console.log(query);
+
   const authToken = query.get('token');
 
-  if (authToken) {
-    user.getAccessToken = () => authToken;
-  }
+  // if (authToken) {
+  user.getAccessToken = () => store.user.accessToken;
+  // }
 
   const server = useServer({ project, location, dataset, dicomStore });
   const studyUIDs = UrlUtil.paramString.parseParam(studyInstanceUIDs);

@@ -1,7 +1,4 @@
 import user from '../user';
-import store from '../../../viewer/src/store/index';
-
-window.store = store;
 
 /**
  * Returns the Authorization header as part of an Object.
@@ -18,6 +15,8 @@ export default function getAuthorizationHeader({ requestOptions } = {}) {
   const store = window.store.getState();
   const user = store.user;
   console.log(store);
+
+  console.log(user.getAccessToken());
 
   headers.Authorization = `Bearer ${user.accessToken}`;
 
