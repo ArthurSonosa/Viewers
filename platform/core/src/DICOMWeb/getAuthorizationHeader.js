@@ -13,12 +13,13 @@ export default function getAuthorizationHeader({ requestOptions } = {}) {
   const headers = {};
 
   const store = window.store.getState();
-  const user = store.user;
+  const userStore = store.user;
   console.log(store);
 
+  console.log(user)
   console.log(user.getAccessToken());
 
-  headers.Authorization = `Bearer ${user.accessToken}`;
+  headers.Authorization = `Bearer ${userStore.accessToken}`;
 
   // Check for OHIF.user since this can also be run on the server
   // const accessToken = user && user.getAccessToken && user.getAccessToken();
