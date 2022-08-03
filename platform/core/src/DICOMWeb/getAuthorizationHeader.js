@@ -20,11 +20,11 @@ export default function getAuthorizationHeader({ requestOptions } = {}) {
   console.log(user.getAccessToken);
   console.log(user.getAccessToken());
 
-  headers.Authorization = `Bearer ${userStore.accessToken}`;
-
   // Check for OHIF.user since this can also be run on the server
   const accessToken = user && user.getAccessToken && user.getAccessToken();
-  console.log(accessToken)
+  console.log(accessToken);
+
+  headers.Authorization = `Bearer ${accessToken}`;
 
   // Auth for a specific server
   // if (requestOptions && requestOptions.auth) {
