@@ -43,6 +43,9 @@ store.subscribe(() => {
   sessionStorage.saveState({
     servers: store.getState().servers,
   });
+  sessionStorage.saveState({
+    user: store.getState().user,
+  });
 });
 
 export default store;
