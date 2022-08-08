@@ -38,8 +38,8 @@ export default class MonaiLabelPanel extends Component {
   constructor(props) {
     super(props);
 
-    const store = window.store.getState();
-    console.log(store);
+    this.store = window.store.getState();
+    console.log(this.store);
 
     const { viewports, studies, activeIndex } = props;
 
