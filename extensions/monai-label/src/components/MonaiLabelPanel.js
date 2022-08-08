@@ -32,13 +32,16 @@ export default class MonaiLabelPanel extends Component {
   static propTypes = {
     studies: PropTypes.any,
     viewports: PropTypes.any,
+    user: PropTypes.any,
     activeIndex: PropTypes.any,
   };
 
   constructor(props) {
     super(props);
 
-    const { viewports, studies, activeIndex } = props;
+    const { viewports, studies, user, activeIndex } = props;
+    console.log('Monai USER: ', user);
+    
     this.viewConstants = this.getViewConstants(viewports, studies, activeIndex);
     console.debug(this.viewConstants);
 
