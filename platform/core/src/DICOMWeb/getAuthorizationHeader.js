@@ -12,8 +12,8 @@ import user from '../user';
 export default function getAuthorizationHeader({ requestOptions } = {}) {
   const headers = {};
 
-  const store = window.store.getState();
-  const userStore = store.user;
+  // const store = window.store.getState();
+  // const userStore = store.user;
   // console.log(store);
 
   // console.log(user)

@@ -228,6 +228,14 @@ export default class MonaiLabelPanel extends Component {
     this.segmentationList.current.onDeleteSegmentByName(name);
   };
 
+  onClickToggleVM = () => {
+    return this.client().start_vm(
+      this.store.user.accessToken,
+      'us-east4-c',
+      'monai-gpu'
+    );
+  };
+
   getIndexByName = name => {
     return this.segmentationList.current.getIndexByName(name);
   };
@@ -256,7 +264,13 @@ export default class MonaiLabelPanel extends Component {
         <SettingsTable ref={this.settings} />
 
         <hr className="seperator" />
-        <p className="subtitle">{this.state.info.name}</p>
+        <button
+          className="segButton"
+          onClick={this.onClickToggleVM}
+          title="Add Segment"
+        >
+          Start
+        </button>
 
         <div className="tabs scrollbar" id="style-3">
           <OptionTable

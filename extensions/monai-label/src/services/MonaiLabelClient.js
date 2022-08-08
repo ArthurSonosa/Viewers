@@ -18,6 +18,36 @@ export default class MonaiLabelClient {
     this.server_url = new URL(server_url);
   }
 
+  async start_vm(token, zone, name) {
+    return this.manage_vm('start', token, zone, name);
+  }
+
+  async stop_vm(token, zone, name) {
+    return this.manage_vm('stop', token, zone, name);
+  }
+
+  async manage_vm(action, token, zone, name) {
+    return await axios
+      .post(
+        `https://app.sonosamedical.com/router/vm/${action}`,
+        { instanceZone: zone, instanceName: name },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      .then(function(response) {
+        console.debug(response);
+        return response;
+      })
+      .catch(function(error) {
+        return error;
+      })
+      .finally(function() {});
+  }
+
   async info() {
     let url = new URL('info', this.server_url);
     return await MonaiLabelClient.api_get(url.toString());
