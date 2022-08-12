@@ -14,19 +14,32 @@ limitations under the License.
 import axios from 'axios';
 
 export default class MonaiLabelClient {
-  constructor(server_url) {
+  constructor(server_url, token) {
     this.server_url = new URL(server_url);
+    this.token = token;
+  }
+
+  async toggle_vm(state, token, zone, name) {
+    if (state) {
+      return this.manage_vm_post('stop', token, zone, name);
+    }
+
+    return this.manage_vm_post('start', token, zone, name);
   }
 
   async start_vm(token, zone, name) {
-    return this.manage_vm('start', token, zone, name);
+    return this.manage_vm_post('start', token, zone, name);
   }
 
   async stop_vm(token, zone, name) {
-    return this.manage_vm('stop', token, zone, name);
+    return this.manage_vm_post('stop', token, zone, name);
   }
 
-  async manage_vm(action, token, zone, name) {
+  async is_vm_running(token, zone, name) {
+    return this.manage_vm_get('is_running', token, zone, name);
+  }
+
+  async manage_vm_post(action, token, zone, name) {
     return await axios
       .post(
         `https://app.sonosamedical.com/router/vm/${action}`,
@@ -48,9 +61,30 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
+  async manage_vm_get(action, token, zone, name) {
+    return await axios
+      .get(
+        `https://app.sonosamedical.com/router/vm/${action}/${zone}/${name}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      .then(function(response) {
+        console.debug(response);
+        return response;
+      })
+      .catch(function(error) {
+        return error;
+      })
+      .finally(function() {});
+  }
+
   async info() {
     let url = new URL('info', this.server_url);
-    return await MonaiLabelClient.api_get(url.toString());
+    return await MonaiLabelClient.api_get(url.toString(), this.token);
   }
 
   async segmentation(model, image, params = {}, label = null) {
@@ -79,6 +113,7 @@ export default class MonaiLabelClient {
 
     return await MonaiLabelClient.api_post(
       url,
+      this.token,
       params,
       label,
       true,
@@ -92,7 +127,7 @@ export default class MonaiLabelClient {
       this.server_url
     ).toString();
 
-    return await MonaiLabelClient.api_post(url, params, null, false, 'json');
+    return await MonaiLabelClient.api_post(url, this.token, params, null, false, 'json');
   }
 
   async save_label(image, label, params) {
@@ -107,7 +142,7 @@ export default class MonaiLabelClient {
       'label.bin'
     );
 
-    return await MonaiLabelClient.api_put_data(url, data, 'json');
+    return await MonaiLabelClient.api_put_data(url, this.token, data, 'json');
   }
 
   async is_train_running() {
@@ -115,7 +150,7 @@ export default class MonaiLabelClient {
     url.searchParams.append('check_if_running', 'true');
     url = url.toString();
 
-    const response = await MonaiLabelClient.api_get(url);
+    const response = await MonaiLabelClient.api_get(url, this.token);
     return (
       response && response.status === 200 && response.data.status === 'RUNNING'
     );
@@ -123,12 +158,12 @@ export default class MonaiLabelClient {
 
   async run_train(params) {
     const url = new URL('train', this.server_url).toString();
-    return await MonaiLabelClient.api_post(url, params, null, false, 'json');
+    return await MonaiLabelClient.api_post(url, this.token, params, null, false, 'json');
   }
 
   async stop_train() {
     const url = new URL('train', this.server_url).toString();
-    return await MonaiLabelClient.api_delete(url);
+    return await MonaiLabelClient.api_delete(url, this.token);
   }
 
   static constructFormDataFromArray(params, data, name, fileName) {
@@ -157,10 +192,14 @@ export default class MonaiLabelClient {
     return files ? MonaiLabelClient.constructFormData(params, files) : params;
   }
 
-  static api_get(url) {
+  static api_get(url, token) {
     console.debug('GET:: ' + url);
     return axios
-      .get(url)
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then(function(response) {
         console.debug(response);
         return response;
@@ -171,10 +210,14 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
-  static api_delete(url) {
+  static api_delete(url, token) {
     console.debug('DELETE:: ' + url);
     return axios
-      .delete(url)
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then(function(response) {
         console.debug(response);
         return response;
@@ -187,6 +230,7 @@ export default class MonaiLabelClient {
 
   static api_post(
     url,
+    token,
     params,
     files,
     form = true,
@@ -195,15 +239,16 @@ export default class MonaiLabelClient {
     const data = form
       ? MonaiLabelClient.constructFormData(params, files)
       : MonaiLabelClient.constructFormOrJsonData(params, files);
-    return MonaiLabelClient.api_post_data(url, data, responseType);
+    return MonaiLabelClient.api_post_data(url, token, data, responseType);
   }
 
-  static api_post_data(url, data, responseType) {
+  static api_post_data(url, token, data, responseType) {
     console.debug('POST:: ' + url);
     return axios
       .post(url, data, {
         responseType: responseType,
         headers: {
+          Authorization: `Bearer ${token}`,
           accept: ['application/json', 'multipart/form-data'],
         },
       })
@@ -217,19 +262,20 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
-  static api_put(url, params, files, form = false, responseType = 'json') {
+  static api_put(url, token, params, files, form = false, responseType = 'json') {
     const data = form
       ? MonaiLabelClient.constructFormData(params, files)
       : MonaiLabelClient.constructFormOrJsonData(params, files);
-    return MonaiLabelClient.api_put_data(url, data, responseType);
+    return MonaiLabelClient.api_put_data(url, token, data, responseType);
   }
 
-  static api_put_data(url, data, responseType = 'json') {
+  static api_put_data(url, token, data, responseType = 'json') {
     console.debug('PUT:: ' + url);
     return axios
       .put(url, data, {
         responseType: responseType,
         headers: {
+          Authorization: `Bearer ${token}`,
           accept: ['application/json', 'multipart/form-data'],
         },
       })

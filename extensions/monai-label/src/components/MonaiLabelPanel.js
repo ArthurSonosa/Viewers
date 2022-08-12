@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import React, { Component } from 'react';
+import React, {Component, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 
 import './MonaiLabelPanel.styl';
@@ -39,7 +39,7 @@ export default class MonaiLabelPanel extends Component {
     super(props);
 
     this.store = window.store.getState();
-    console.log(this.store);
+    // console.log(this.store);
 
     const { viewports, studies, activeIndex } = props;
 
@@ -60,10 +60,14 @@ export default class MonaiLabelPanel extends Component {
     this.state = {
       info: {},
       action: {},
+      vmStarted: false,
+      fetchingVMStatus: false,
     };
   }
 
   async componentDidMount() {
+    await this.isVMStarted();
+
     await this.onInfo();
   }
 
@@ -73,7 +77,8 @@ export default class MonaiLabelPanel extends Component {
         ? this.settings.current.state
         : null;
     return new MonaiLabelClient(
-      settings ? settings.url : 'http://127.0.0.1:8000'
+      'https://app.sonosamedical.com/router/monai/',
+      this.store.user.accessToken
     );
   };
 
@@ -228,12 +233,53 @@ export default class MonaiLabelPanel extends Component {
     this.segmentationList.current.onDeleteSegmentByName(name);
   };
 
-  onClickToggleVM = () => {
-    return this.client().start_vm(
+  isVMStarted = async () => {
+    const v = await this.client().is_vm_running(
       this.store.user.accessToken,
       'us-east4-c',
       'monai-gpu'
     );
+    // console.log(v);
+
+    this.setState({ vmStarted: v.data });
+  };
+
+  onClickToggleVM = async () => {
+    const action = this.state.vmStarted ? {now: 'Stop', past: 'Stopped'} : {now: 'Start', past: 'Started'};
+    this.setState({ fetchingVMStatus: true });
+
+    const response = await this.client().toggle_vm(
+      this.state.vmStarted,
+      this.store.user.accessToken,
+      'us-east4-c',
+      'monai-gpu'
+    );
+    // console.log(response);
+
+    if (response.status !== 200) {
+      this.setState({ fetchingVMStatus: false });
+      this.notification.show({
+        title: 'MONAI Label',
+        message: `Failed to ${action.now} the GPU MonaiLabel Instance`,
+        type: 'error',
+        duration: 5000,
+      });
+    } else {
+      this.setState({ fetchingVMStatus: false });
+      this.notification.show({
+        title: 'MONAI Label',
+        message: `${action.past} GPU MonaiLabel Instance!`,
+        type: 'success',
+        duration: 2000,
+      });
+
+      // Could replace with a simple setState, but just to be sure that it was turned on/off
+      await this.isVMStarted();
+
+      // Re fetch info from started vm
+      await this.onInfo();
+    }
+
   };
 
   getIndexByName = name => {
@@ -259,17 +305,23 @@ export default class MonaiLabelPanel extends Component {
           onSegmentDeleted={this.onSegmentDeleted}
           onSegmentSelected={this.onSegmentSelected}
         />
-        <br style={{ margin: '3px' }} />
-
-        <SettingsTable ref={this.settings} />
-
-        <hr className="seperator" />
         <button
-          className="segButton"
+          className={
+            'vmButton actionButton ' +
+            (this.state.vmStarted ? 'vmStopped' : 'vmStarted')
+          }
+          disabled={this.state.fetchingVMStatus}
+          // style={ this.state.vmStarted ? { backgroundColor: 'red', borderColor: 'darkgreen'} : { backgroundColor: 'green', borderColor: 'green'}}
           onClick={this.onClickToggleVM}
-          title="Add Segment"
+          title="Toggle GPU Instance"
         >
-          Start
+          {this.state.fetchingVMStatus && (
+              <div className="loader"/>
+          )}
+          {!this.state.fetchingVMStatus && ( <span>
+            {this.state.vmStarted ? 'Stop' : 'Start'} GPU Instance
+          </span> )}
+
         </button>
 
         <div className="tabs scrollbar" id="style-3">

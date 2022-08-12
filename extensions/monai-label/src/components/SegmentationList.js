@@ -384,6 +384,10 @@ export default class SegmentationList extends Component {
     if (!selectedIndex) {
       selectedIndex = this.getSelectedActiveIndex();
     }
+
+    // console.log(response)
+    // console.log(response.data)
+
     const { header, image } = SegmentationReader.parseNrrdData(response.data);
     this.setState({ header: header });
     console.debug(selectedIndex);
