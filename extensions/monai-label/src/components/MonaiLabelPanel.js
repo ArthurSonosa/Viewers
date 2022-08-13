@@ -68,7 +68,9 @@ export default class MonaiLabelPanel extends Component {
   async componentDidMount() {
     await this.isVMStarted();
 
-    await this.onInfo();
+    if (this.state.vmStarted) {
+      await this.onInfo();
+    }
   }
 
   client = () => {
