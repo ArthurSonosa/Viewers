@@ -57,20 +57,75 @@ export default class MonaiLabelPanel extends Component {
       scribbles: React.createRef(),
     };
 
+    // If the MonaiLabelClient is used to make a request to the GPU instance
+    // then the reset is marked as true then the setTimeout function will reset the timer instead
+    this.flagTimerReset = React.createRef();
+
+    this.timer = null;
+
     this.state = {
       info: {},
       action: {},
       vmStarted: false,
       fetchingVMStatus: false,
+      timerEstimate: 0,
     };
   }
 
   async componentDidMount() {
+    this.setState({ fetchingVMStatus: true });
     await this.isVMStarted();
+    this.setState({ fetchingVMStatus: false });
+
+    if (!this.state.vmStarted) {
+      const r = await this.client().start_vm(
+        this.store.user.accessToken,
+        'us-east4-c',
+        'monai-gpu'
+      );
+      console.log(r)
+      await this.isVMStarted();
+    }
 
     if (this.state.vmStarted) {
+      console.log('VM Started getting info...');
       await this.onInfo();
+
+      // Create an estimate of the timer until the GPU instance is shutdown
+      // Timer is reset for every request sent to the router
+      this.timerLoop();
     }
+  }
+
+  async componentWillUnmount() {
+    clearTimeout(this.timer);
+  }
+
+  async timerLoop() {
+    if (this.flagTimerReset.current) {
+      // Client successfully sent a request to the gpu-instance which reset the timer on the router
+      // so reset local timer
+      this.setState({ timerEstimate: 0 });
+      this.flagTimerReset.current = false;
+      
+    } else {
+      // Increment the timer by 15 seconds
+      this.setState((prevState, props) => ({
+        timerEstimate: prevState.timerEstimate + 15,
+      }));
+    }
+    
+    if (this.state.timerEstimate >= 1500) {
+      // Once the timer reaches 25 minutes query the router for the actual inactivity timer
+      const time = await this.client().get_elapsed_time();
+      this.setState({ timerEstimate: time.data });
+    }
+
+    this.timer = setTimeout(() => this.timerLoop(), 15000); // Every 15 seconds
+  }
+
+  resetTimerEstimate() {
+    this.setState({ timerEstimate: 0 });
   }
 
   client = () => {
@@ -80,7 +135,8 @@ export default class MonaiLabelPanel extends Component {
         : null;
     return new MonaiLabelClient(
       'https://app.sonosamedical.com/router/monai/',
-      this.store.user.accessToken
+      this.store.user.accessToken,
+      this.flagTimerReset
     );
   };
 
@@ -140,6 +196,7 @@ export default class MonaiLabelPanel extends Component {
       });
 
       this.setState({ info: response.data });
+      this.resetTimerEstimate();
     }
   };
 
@@ -241,8 +298,8 @@ export default class MonaiLabelPanel extends Component {
       'us-east4-c',
       'monai-gpu'
     );
-    // console.log(v);
-
+    
+    console.log('Is VM Started: ' + v.data);
     this.setState({ vmStarted: v.data });
   };
 
@@ -298,7 +355,14 @@ export default class MonaiLabelPanel extends Component {
 
   render() {
     return (
-      <div className="monaiLabelPanel">
+      (!this.state.fetchingVMStatus && this.state.vmStarted) ? <div className="monaiLabelPanel">
+        { this.state.timerEstimate >= 1500 && // After 25 minutes
+          <div style={{ display: 'flex', alignItems: 'center', padding: '2rem', textAlign: "center", background: "darkred"}}>
+            <span style={{ fontSize: '1.5rem' }}>
+              GPU Instance is about to shutdown due to inactivity
+            </span>
+          </div>
+        }
         <SegmentationList
           ref={this.segmentationList}
           viewConstants={this.viewConstants}
@@ -307,24 +371,26 @@ export default class MonaiLabelPanel extends Component {
           onSegmentDeleted={this.onSegmentDeleted}
           onSegmentSelected={this.onSegmentSelected}
         />
-        <button
-          className={
-            'vmButton actionButton ' +
-            (this.state.vmStarted ? 'vmStopped' : 'vmStarted')
-          }
-          disabled={this.state.fetchingVMStatus}
-          // style={ this.state.vmStarted ? { backgroundColor: 'red', borderColor: 'darkgreen'} : { backgroundColor: 'green', borderColor: 'green'}}
-          onClick={this.onClickToggleVM}
-          title="Toggle GPU Instance"
-        >
-          {this.state.fetchingVMStatus && (
-              <div className="loader"/>
-          )}
-          {!this.state.fetchingVMStatus && ( <span>
+          {
+            !this.state.vmStarted && <button
+            className={
+              'vmButton actionButton ' +
+              (this.state.vmStarted ? 'vmStopped' : 'vmStarted')
+            }
+            disabled={this.state.fetchingVMStatus}
+            // style={ this.state.vmStarted ? { backgroundColor: 'red', borderColor: 'darkgreen'} : { backgroundColor: 'green', borderColor: 'green'}}
+            onClick={this.onClickToggleVM}
+            title="Toggle GPU Instance"
+          >
+            {this.state.fetchingVMStatus && (
+              <div className="loader" />
+            )}
+            {!this.state.fetchingVMStatus && (<span>
             {this.state.vmStarted ? 'Stop' : 'Start'} GPU Instance
-          </span> )}
+          </span>)}
 
-        </button>
+          </button>
+        }
 
         <div className="tabs scrollbar" id="style-3">
           <OptionTable
@@ -395,7 +461,12 @@ export default class MonaiLabelPanel extends Component {
         </div>
 
         <p>&nbsp;</p>
-      </div>
+      </div> :
+        <div style={{display: "flex", alignItems: "center", padding: "1rem", flexDirection: "column", gap: "1.5rem"}}>
+          <div className="loading-dual-ring"></div>
+          {this.state.fetchingVMStatus && <span style={{color: "white", fontSize: "1.25rem"}}>Fetching GPU Server Status...</span>}
+          {!this.state.fetchingVMStatus && !this.state.vmStarted && <span style={{color: "white", fontSize: "1.25rem"}}>Starting GPU Server...</span>}
+        </div>
     );
   }
 }

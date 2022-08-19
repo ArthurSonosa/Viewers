@@ -14,9 +14,31 @@ limitations under the License.
 import axios from 'axios';
 
 export default class MonaiLabelClient {
-  constructor(server_url, token) {
+  constructor(server_url, token, flagTimerReset) {
     this.server_url = new URL(server_url);
     this.token = token;
+    this.flagTimerReset = flagTimerReset;
+  }
+
+  async get_elapsed_time() {
+    // Get elapsed time of inactivity for the gpu-instance
+    return await axios
+      .get(
+        `https://app.sonosamedical.com/get/timer_elapsed`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      .then(function(response) {
+        return response;
+      })
+      .catch(function(error) {
+        return error;
+      })
+      .finally(function() {});
   }
 
   async toggle_vm(state, token, zone, name) {
@@ -84,7 +106,7 @@ export default class MonaiLabelClient {
 
   async info() {
     let url = new URL('info', this.server_url);
-    return await MonaiLabelClient.api_get(url.toString(), this.token);
+    return await this.api_get(url.toString(), this.token);
   }
 
   async segmentation(model, image, params = {}, label = null) {
@@ -111,7 +133,7 @@ export default class MonaiLabelClient {
       params.result_compress = false;
     }
 
-    return await MonaiLabelClient.api_post(
+    return await this.api_post(
       url,
       this.token,
       params,
@@ -127,7 +149,7 @@ export default class MonaiLabelClient {
       this.server_url
     ).toString();
 
-    return await MonaiLabelClient.api_post(url, this.token, params, null, false, 'json');
+    return await this.api_post(url, this.token, params, null, false, 'json');
   }
 
   async save_label(image, label, params) {
@@ -142,7 +164,7 @@ export default class MonaiLabelClient {
       'label.bin'
     );
 
-    return await MonaiLabelClient.api_put_data(url, this.token, data, 'json');
+    return await this.api_put_data(url, this.token, data, 'json');
   }
 
   async is_train_running() {
@@ -150,7 +172,7 @@ export default class MonaiLabelClient {
     url.searchParams.append('check_if_running', 'true');
     url = url.toString();
 
-    const response = await MonaiLabelClient.api_get(url, this.token);
+    const response = await this.api_get(url, this.token);
     return (
       response && response.status === 200 && response.data.status === 'RUNNING'
     );
@@ -158,12 +180,12 @@ export default class MonaiLabelClient {
 
   async run_train(params) {
     const url = new URL('train', this.server_url).toString();
-    return await MonaiLabelClient.api_post(url, this.token, params, null, false, 'json');
+    return await this.api_post(url, this.token, params, null, false, 'json');
   }
 
   async stop_train() {
     const url = new URL('train', this.server_url).toString();
-    return await MonaiLabelClient.api_delete(url, this.token);
+    return await this.api_delete(url, this.token);
   }
 
   static constructFormDataFromArray(params, data, name, fileName) {
@@ -192,7 +214,7 @@ export default class MonaiLabelClient {
     return files ? MonaiLabelClient.constructFormData(params, files) : params;
   }
 
-  static api_get(url, token) {
+  api_get(url, token) {
     console.debug('GET:: ' + url);
     return axios
       .get(url, {
@@ -200,8 +222,9 @@ export default class MonaiLabelClient {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then(function(response) {
+      .then(response => {
         console.debug(response);
+        this.flagTimerReset.current = true;
         return response;
       })
       .catch(function(error) {
@@ -210,7 +233,7 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
-  static api_delete(url, token) {
+  api_delete(url, token) {
     console.debug('DELETE:: ' + url);
     return axios
       .delete(url, {
@@ -218,8 +241,9 @@ export default class MonaiLabelClient {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then(function(response) {
+      .then(response => {
         console.debug(response);
+        this.flagTimerReset.current = true;
         return response;
       })
       .catch(function(error) {
@@ -228,7 +252,7 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
-  static api_post(
+  api_post(
     url,
     token,
     params,
@@ -239,10 +263,10 @@ export default class MonaiLabelClient {
     const data = form
       ? MonaiLabelClient.constructFormData(params, files)
       : MonaiLabelClient.constructFormOrJsonData(params, files);
-    return MonaiLabelClient.api_post_data(url, token, data, responseType);
+    return this.api_post_data(url, token, data, responseType);
   }
 
-  static api_post_data(url, token, data, responseType) {
+  api_post_data(url, token, data, responseType) {
     console.debug('POST:: ' + url);
     return axios
       .post(url, data, {
@@ -252,8 +276,9 @@ export default class MonaiLabelClient {
           accept: ['application/json', 'multipart/form-data'],
         },
       })
-      .then(function(response) {
+      .then(response => {
         console.debug(response);
+        this.flagTimerReset.current = true;
         return response;
       })
       .catch(function(error) {
@@ -262,14 +287,14 @@ export default class MonaiLabelClient {
       .finally(function() {});
   }
 
-  static api_put(url, token, params, files, form = false, responseType = 'json') {
+  api_put(url, token, params, files, form = false, responseType = 'json') {
     const data = form
       ? MonaiLabelClient.constructFormData(params, files)
       : MonaiLabelClient.constructFormOrJsonData(params, files);
-    return MonaiLabelClient.api_put_data(url, token, data, responseType);
+    return this.api_put_data(url, token, data, responseType);
   }
 
-  static api_put_data(url, token, data, responseType = 'json') {
+  api_put_data(url, token, data, responseType = 'json') {
     console.debug('PUT:: ' + url);
     return axios
       .put(url, data, {
@@ -279,8 +304,9 @@ export default class MonaiLabelClient {
           accept: ['application/json', 'multipart/form-data'],
         },
       })
-      .then(function(response) {
+      .then(response => {
         console.debug(response);
+        this.flagTimerReset.current = true;
         return response;
       })
       .catch(function(error) {
