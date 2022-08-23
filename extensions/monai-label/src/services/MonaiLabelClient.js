@@ -172,6 +172,7 @@ export default class MonaiLabelClient {
     url.searchParams.append('check_if_running', 'true');
     url = url.toString();
 
+    // MONAILabel returns 404 if training task is not currently running, otherwise returns 200
     const response = await this.api_get(url, this.token);
     return (
       response && response.status === 200 && response.data.status === 'RUNNING'
